@@ -1,7 +1,4 @@
-#!/bin/bash
-set -e
 
-# ============================================
 # KOVA AZR — MASTER BOOTSTRAP
 # One script. Everything. Start to finish.
 # ============================================
@@ -19,14 +16,14 @@ echo ''
 
 # ---------- CONFIG ----------
 export KOVA_ROOT="$HOME/kova"
-export BASE_MODEL_ID='google/gemma-4-26B-A4B-it'
+export BASE_MODEL_ID='google/gemma-4-E4B-it'
 export KOVA_DATA_ROOT="$KOVA_ROOT/data"
 export KOVA_CKPT_ROOT="$KOVA_ROOT/checkpoints"
 export KOVA_RUN_NAME='kova-azr-gemma4'
 export PYTHONPATH="$KOVA_ROOT/src:$PYTHONPATH"
 export TOKENIZERS_PARALLELISM=false
 
-GRPO_HOURS=16
+GRPO_HOURS=17
 
 mkdir -p "$KOVA_ROOT" && cd "$KOVA_ROOT"
 mkdir -p src/kova/verifiers scripts data/seeds data/evals checkpoints logs
