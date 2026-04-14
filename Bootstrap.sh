@@ -251,7 +251,7 @@ model = get_peft_model(model, LoraConfig(r=16, lora_alpha=32, lora_dropout=0.05,
     target_modules=['q_proj','k_proj','v_proj','o_proj']))
 
 Trainer(
-    model=model, tokenizer=tok, train_dataset=ds.map(fmt),
+    model=model, processing_class=tok, train_dataset=ds.map(fmt),
     data_collator=DataCollatorForLanguageModeling(tok, mlm=False),
     args=TrainingArguments(output_dir=out_dir, per_device_train_batch_size=1, num_train_epochs=1,
         logging_steps=10, save_steps=500, learning_rate=2e-4, bf16=True,
@@ -373,7 +373,7 @@ def main():
         run_name=os.environ.get('KOVA_RUN_NAME','kova-azr-grpo'))
 
     print(f'Starting GRPO for {steps} steps...\n')
-    trainer = GRPOTrainer(model=model, args=cfg, train_dataset=ds, reward_funcs=[reward_fn], tokenizer=tok)
+    trainer = GRPOTrainer(model=model, args=cfg, train_dataset=ds, reward_funcs=[reward_fn], processing_class=tok)
     trainer.train()
     trainer.save_model(out); tok.save_pretrained(out)
     print(f'\nCheckpoint: {out}')
