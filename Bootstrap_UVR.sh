@@ -1,0 +1,20 @@
+#!/bin/bash
+set -e
+export KOVA_ROOT="$HOME/kova"
+export BASE_MODEL_ID='Qwen/Qwen3.5-4B'
+export KOVA_DATA_ROOT="$KOVA_ROOT/data"
+export KOVA_CKPT_ROOT="$KOVA_ROOT/checkpoints"
+export PYTHONPATH="$KOVA_ROOT/src:$PYTHONPATH"
+mkdir -p "$KOVA_ROOT/scripts" "$KOVA_ROOT/checkpoints" "$KOVA_ROOT/logs" "$KOVA_ROOT/src/kova"
+cd "$KOVA_ROOT"
+apt-get update -qq && apt-get install -y -qq build-essential git curl wget sqlite3 openjdk-17-jdk rustc cargo nodejs npm gcc g++ golang-go
+pip install -q torch transformers datasets accelerate peft trl bitsandbytes sentencepiece safetensors sympy wandb playwright pytest huggingface_hub lm-eval tensorboard numpy
+python -m playwright install chromium
+npm install --silent tsx three
+huggingface-cli login --token $HF_TOKEN
+curl -sSL https://raw.githubusercontent.com/FireworksAI26/kova-azr/refs/heads/main/run_uvr.py -o scripts/run_uvr.py
+echo "=== Starting UVR training ==="
+python scripts/run_uvr.py --max-hours 30 --batch-size 4
+echo "=== Uploading to HuggingFace ==="
+huggingface-cli upload KovaUser/kova-uvr-qwen4b $KOVA_CKPT_ROOT/uvr/
+echo "Upload complete: https://huggingface.co/KovaUser/kova-uvr-qwen4b"
