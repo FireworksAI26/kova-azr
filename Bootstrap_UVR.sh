@@ -10,7 +10,7 @@ apt-get update -qq && apt-get install -y -qq build-essential git curl wget sqlit
 pip install -q torch transformers datasets accelerate peft trl bitsandbytes sentencepiece safetensors sympy wandb playwright pytest huggingface_hub lm-eval tensorboard numpy
 python -m playwright install chromium
 npm install --silent tsx three
-huggingface-cli login --token $HF_TOKEN
+hf auth login --token $HF_TOKEN
 curl -sSL https://raw.githubusercontent.com/FireworksAI26/kova-azr/refs/heads/main/run_uvr.py -o scripts/run_uvr.py
 python scripts/run_uvr.py --max-hours 17 --batch-size 4
-huggingface-cli upload KovaUser/kova-uvr-qwen4b $KOVA_CKPT_ROOT/uvr/
+hf upload KovaUser/kova-uvr-qwen4b $KOVA_CKPT_ROOT/uvr/
