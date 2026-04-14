@@ -12,5 +12,5 @@ python -m playwright install chromium
 npm install --silent tsx three
 huggingface-cli login --token $HF_TOKEN
 curl -sSL https://raw.githubusercontent.com/FireworksAI26/kova-azr/refs/heads/main/run_uvr.py -o scripts/run_uvr.py
-python scripts/run_uvr.py --max-hours 30 --batch-size 4
+python scripts/run_uvr.py --max-hours 17 --batch-size 4
 huggingface-cli upload KovaUser/kova-uvr-qwen4b $KOVA_CKPT_ROOT/uvr/
