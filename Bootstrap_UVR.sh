@@ -4,7 +4,6 @@ export KOVA_ROOT="$HOME/kova"
 export BASE_MODEL_ID='Qwen/Qwen3.5-4B'
 export KOVA_CKPT_ROOT="$KOVA_ROOT/checkpoints"
 export PYTHONPATH="$KOVA_ROOT/src:$PYTHONPATH"
-export HF_TOKEN='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'
 mkdir -p "$KOVA_ROOT/scripts" "$KOVA_ROOT/checkpoints" "$KOVA_ROOT/logs"
 cd "$KOVA_ROOT"
 apt-get update -qq && apt-get install -y -qq build-essential git curl wget sqlite3 openjdk-17-jdk rustc cargo nodejs npm gcc g++ golang-go
