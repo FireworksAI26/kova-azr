@@ -1,3 +1,6 @@
+#!/bin/bash
+set -e
+
 # KOVA AZR — MASTER BOOTSTRAP
 # One script. Everything. Start to finish.
 # ============================================
