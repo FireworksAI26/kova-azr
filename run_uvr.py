@@ -398,13 +398,74 @@ def main():
     # Initialize curriculum
     curriculum = CurriculumController(DOMAINS, targets, ramp_steps=args.ramp_steps)
 
-    # Build initial prompt pool based on curriculum difficulty
+    # ── Self-play: model proposes tasks ──
+    def generate_self_play_task(model, tokenizer, domain, device='cuda'):
+        """Ask the model to propose a coding/math task, then verify it's solvable."""
+        meta_prompts = {
+            'math': 'Create a math problem that has a single numerical answer. Format: PROBLEM: <problem>\nANSWER: <number>',
+            'python': 'Create a Python coding challenge. The solution should print a single number or word. Format: TASK: <task>\nEXPECTED_OUTPUT: <output>',
+            'sql': 'Create a SQL challenge with a CREATE TABLE and INSERT statements, then a question. Format: SCHEMA: <schema>\nTASK: <question>\nEXPECTED: <result>',
+            'cybersecurity': 'Create a Python security challenge about fixing a vulnerability. Format: TASK: <task description>',
+        }
+        # Default meta-prompt for code domains
+        lang = domain if domain in LANG_MAP else 'python'
+        meta = meta_prompts.get(domain, f'Create a {domain} coding challenge where the solution prints a single number. Format: TASK: <task>\nEXPECTED_OUTPUT: <output>')
+        
+        inputs = tokenizer(meta, return_tensors='pt', truncation=True, max_length=256).to(device)
+        with torch.no_grad():
+            out = model.generate(**inputs, max_new_tokens=256, do_sample=True, temperature=0.9, pad_token_id=tokenizer.pad_token_id)
+        proposal = tokenizer.decode(out[0][inputs['input_ids'].shape[1]:], skip_special_tokens=True)
+        
+        # Try to parse the proposal into a task
+        try:
+            if domain == 'math' and 'ANSWER:' in proposal:
+                parts = proposal.split('ANSWER:')
+                prompt = parts[0].replace('PROBLEM:','').strip()
+                expected = re.findall(r'-?\d+\.?\d*', parts[1])
+                if prompt and expected:
+                    return {'prompt': prompt + ' Answer with just the number.', 'expected': expected[0], 'domain': 'math', 'self_play': True}
+            elif 'EXPECTED_OUTPUT:' in proposal:
+                parts = proposal.split('EXPECTED_OUTPUT:')
+                task_text = parts[0].replace('TASK:','').strip()
+                expected_out = parts[1].strip().split('\n')[0]
+                if task_text and expected_out:
+                    lang_key = LANG_MAP.get(domain, 'python')
+                    return {'prompt': task_text + ' Output only code.', 'expected_stdout': expected_out + '\n', 'lang': lang_key, 'domain': domain, 'self_play': True}
+        except:
+            pass
+        return None  # Failed to parse — fall back to template
+
+    # Build prompt pool: mix templates + self-play
     def build_pool(curriculum, size=500):
         pool = []
-        for _ in range(size):
+        self_play_ratio = min(0.5, curriculum.difficulty)  # 0% at start, up to 50% at full difficulty
+        self_play_count = int(size * self_play_ratio)
+        template_count = size - self_play_count
+        
+        # Template tasks
+        for _ in range(template_count):
             dom = curriculum.sample_domain()
             task = generate_task(dom, curriculum.difficulty)
             pool.append(task)
+        
+        # Self-play tasks (model proposes)
+        if self_play_count > 0:
+            print(f'  Generating {self_play_count} self-play tasks...')
+            sp_generated = 0
+            for _ in range(self_play_count * 3):  # Try 3x because some will fail to parse
+                if sp_generated >= self_play_count:
+                    break
+                dom = curriculum.sample_domain()
+                task = generate_self_play_task(model, tok, dom)
+                if task is not None:
+                    pool.append(task)
+                    sp_generated += 1
+            # Fill remaining with templates if self-play didn't generate enough
+            while len(pool) < size:
+                dom = curriculum.sample_domain()
+                pool.append(generate_task(dom, curriculum.difficulty))
+            print(f'  Self-play: {sp_generated}/{self_play_count} proposed, {template_count} templates')
+        
         return pool
 
     pool = build_pool(curriculum)
