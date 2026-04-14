@@ -1,4 +1,3 @@
-
 # KOVA AZR — MASTER BOOTSTRAP
 # One script. Everything. Start to finish.
 # ============================================
@@ -16,7 +15,7 @@ echo ''
 
 # ---------- CONFIG ----------
 export KOVA_ROOT="$HOME/kova"
-export BASE_MODEL_ID='google/gemma-4-E4B-it'
+export BASE_MODEL_ID='Qwen/Qwen3.5-9B'
 export KOVA_DATA_ROOT="$KOVA_ROOT/data"
 export KOVA_CKPT_ROOT="$KOVA_ROOT/checkpoints"
 export KOVA_RUN_NAME='kova-azr-gemma4'
