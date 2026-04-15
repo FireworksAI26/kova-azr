@@ -486,7 +486,6 @@ def main():
         max_completion_length=512, learning_rate=args.lr,
         logging_steps=1, save_steps=max(1, max_steps//10),
         bf16=True, gradient_accumulation_steps=4,
-        peft_config=lora,
         report_to=['tensorboard'],
         run_name='kova-uvr'
     )
@@ -495,7 +494,8 @@ def main():
     print(f'\nStarting UVR training...\n')
     trainer = GRPOTrainer(
         model=model, args=cfg, train_dataset=ds,
-        reward_funcs=[reward_fn], processing_class=tok
+        reward_funcs=[reward_fn], processing_class=tok,
+        peft_config=lora
     )
 
     # Custom training loop with curriculum updates
