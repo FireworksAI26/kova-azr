@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 trap 'echo "ERROR: line ${LINENO}: command failed: ${BASH_COMMAND} (exit $?)" >&2' ERR
-export PS4='+(${BASH_SOURCE}:${LINENO}): '
+export PS4='+(line ${LINENO}): '
 set -x
 : "${HF_TOKEN:?HF_TOKEN env var is required}"
 export HF_TOKEN="$HF_TOKEN"
